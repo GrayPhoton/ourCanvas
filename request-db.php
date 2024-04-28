@@ -1,7 +1,10 @@
 <?php
-function getAllUser(){
+function getAllUser($search = ''){
     global $db;
-    $query = "SELECT * FROM canvasUser";    
+    $query = "SELECT * FROM canvasUser";
+    if (!empty($search)) {
+        $query .= " WHERE name LIKE '%$search%' OR login_email LIKE '%$search%' OR login_password LIKE '%$search%'";
+    }
     $statement = $db -> prepare($query);    // compile
     $statement -> execute();
     $result = $statement -> fetchAll();     // fetch()
@@ -45,9 +48,12 @@ function deleteUser(){
     $statement -> closeCursor();
 }
 
-function getAllAssignment(){
+function getAllAssignment($search = ''){
     global $db;
-    $query = "SELECT * FROM assignment";    
+    $query = "SELECT * FROM assignment";
+    if (!empty($search)) {
+        $query .= " WHERE name LIKE '%$search%' OR type LIKE '%$search%' OR dueDate LIKE '%$search%'";
+    }  
     $statement = $db -> prepare($query);    // compile
     $statement -> execute();
     $result = $statement -> fetchAll();     // fetch()
@@ -83,9 +89,12 @@ function deleteAssignment($assignmentId){
     $statement -> closeCursor();
 }
 
-function getAllCourse(){
+function getAllCourse($search = ''){
     global $db;
-    $query = "SELECT * FROM course";    
+    $query = "SELECT * FROM course";
+    if (!empty($search)) {
+        $query .= " WHERE name LIKE '%$search%'";
+    }
     $statement = $db -> prepare($query);    // compile
     $statement -> execute();
     $result = $statement -> fetchAll();     // fetch()
@@ -115,9 +124,12 @@ function deleteCourse($courseId){
 }
 
 
-function getAllWork(){
+function getAllWork($search = ''){
     global $db;
-    $query = "SELECT * FROM work";    
+    $query = "SELECT * FROM work";
+    if (!empty($search)) {
+        $query .= " WHERE name LIKE '%$search%' OR notes LIKE '%$search%'";
+    }
     $statement = $db -> prepare($query);    // compile
     $statement -> execute();
     $result = $statement -> fetchAll();     // fetch()

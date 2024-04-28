@@ -4,10 +4,22 @@
 ?>
 
 <?php   // form handling
-  $list_of_user = getAllUser();
-  $list_of_assignment = getAllAssignment();
-  $list_of_course = getAllCourse();
-  $list_of_work = getAllWork();
+  $userSearch = isset($_GET['userSearch']) ? $_GET['userSearch'] : '';
+  $courseSearch = isset($_GET['courseSearch']) ? $_GET['courseSearch'] : '';
+  $assignmentSearch = isset($_GET['assignmentSearch']) ? $_GET['assignmentSearch'] : '';
+  $workSearch = isset($_GET['workSearch']) ? $_GET['workSearch'] : '';
+
+  if (isset($_GET['clearSearch'])) {
+    $userSearch = '';
+    $courseSearch = '';
+    $assignmentSearch = '';
+    $workSearch = '';
+  }
+
+  $list_of_user = getAllUser($userSearch);
+  $list_of_course = getAllCourse($courseSearch);
+  $list_of_assignment = getAllAssignment($assignmentSearch);
+  $list_of_work = getAllWork($workSearch);
 
   if (!empty($_POST['thisUserBtn']))
   {
@@ -41,6 +53,7 @@
     $list_of_course = getAllCourse();
     $list_of_work = getAllWork();
   }
+
 ?>
 
 <!DOCTYPE html>
@@ -65,17 +78,18 @@
   <div class="row g-3 mt-2">
     <div class="col">
       <h2>Our Canvas</h2>
+    </div>
+    <div class="col text-end">
+      <a href="main.php?clearSearch=true" class="btn btn-primary">Clear Search</a>
     </div>  
   </div>
 </div>
 
-
-
-
-
-
 <div class="container">
   <h3>List of Users</h3>
+    <form method="GET" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+      <input type="text" name="userSearch" placeholder="Search users..." class="form-control mb-3" value="<?php if(isset($_GET['userSearch'])) echo $_GET['userSearch']; ?>">
+    </form>
     <div class="row justify-content-center">  
       <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
         <thead>
@@ -106,6 +120,9 @@
 </div>
 <div class="container">
   <h3>List of Course</h3>
+    <form method="GET" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+      <input type="text" name="courseSearch" placeholder="Search courses..." class="form-control mb-3" value="<?php if(isset($_GET['courseSearch'])) echo $_GET['courseSearch']; ?>">
+    </form>
     <div class="row justify-content-center">  
       <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
         <thead>
@@ -132,6 +149,9 @@
 </div>
 <div class="container">
   <h3>List of Assignments</h3>
+    <form method="GET" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+      <input type="text" name="assignmentSearch" placeholder="Search assignments..." class="form-control mb-3" value="<?php if(isset($_GET['assignmentSearch'])) echo $_GET['assignmentSearch']; ?>">
+    </form>
     <div class="row justify-content-center">  
       <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
         <thead>
@@ -164,6 +184,9 @@
 </div>
 <div class="container">
   <h3>List of Work</h3>
+    <form method="GET" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+      <input type="text" name="workSearch" placeholder="Search works..." class="form-control mb-3" value="<?php if(isset($_GET['workSearch'])) echo $_GET['workSearch']; ?>">
+    </form>
     <div class="row justify-content-center">  
       <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
         <thead>
