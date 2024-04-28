@@ -9,12 +9,37 @@
   $list_of_course = getAllCourse();
   $list_of_work = getAllWork();
 
-
-  if ($_SERVER['REQUEST_METHOD'] == 'POST'){
-    if(!empty($_POST['thisUserBtn'])){
-    }
-
-
+  if (!empty($_POST['thisUserBtn']))
+  {
+    deleteUser($_POST['userId']);
+    $list_of_user = getAllUser();
+    $list_of_assignment = getAllAssignment();
+    $list_of_course = getAllCourse();
+    $list_of_work = getAllWork();
+  }
+  else if (!empty($_POST['thiCourseBtn']))
+  {
+    deleteCourse($_POST['courseId']);
+    $list_of_user = getAllUser();
+    $list_of_assignment = getAllAssignment();
+    $list_of_course = getAllCourse();
+    $list_of_work = getAllWork();
+  }
+  else if (!empty($_POST['thisAssignmentBtn']))
+  {
+    deleteAssignment($_POST['assignmentId']);
+    $list_of_user = getAllUser();
+    $list_of_assignment = getAllAssignment();
+    $list_of_course = getAllCourse();
+    $list_of_work = getAllWork();
+  }
+  else if (!empty($_POST['thisWorkBtn']))
+  {
+    deleteWork($_POST['workId']);
+    $list_of_user = getAllUser();
+    $list_of_assignment = getAllAssignment();
+    $list_of_course = getAllCourse();
+    $list_of_work = getAllWork();
   }
 ?>
 
@@ -50,26 +75,54 @@
 
 
 <div class="container">
-  <h3>List of Assignments</h3>
+  <h3>List of Users</h3>
     <div class="row justify-content-center">  
       <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
         <thead>
           <tr style="background-color:#B0B0B0">
             <th width="30%"><b>userID</b></th>
             <th width="30%"><b>Name</b></th>        
-            <th width="30%"><b>assignmentID</b></th>
-            <th><b>This User?</b></th>   
+            <th width="30%"><b>Email</b></th>
+            <th width="30%"><b>Password</b></th>
+            <th><b>Delete?</b></th>   
           </tr>
         </thead>
         <?php foreach ($list_of_user as $info): ?>
           <tr>
             <td><?php echo $info['userId']; ?></td>
             <td><?php echo $info['name']; ?></td>
-            <td><?php echo $info['age']; ?></td>
+            <td><?php echo $info['login_email']; ?></td>
+            <td><?php echo $info['login_password']; ?></td>
             <td>
-              <form action="request.php" method="post">
-                <input type="submit" value="Yes" name="thisUserBtn" class="btn btn-primary" />
+              <form action="main.php" method="post">
+                <input type="submit" value="Delete" name="thisUserBtn" class="btn btn-danger" />
                 <input type="hidden" name="userId" value="<?php echo $info['userId']; ?>"/>
+              </form>
+            </td>
+          </tr>
+        <?php endforeach; ?>
+      </table>
+    </div>
+</div>
+<div class="container">
+  <h3>List of Course</h3>
+    <div class="row justify-content-center">  
+      <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
+        <thead>
+          <tr style="background-color:#B0B0B0">
+            <th width="30%"><b>Course ID</b></th>
+            <th width="30%"><b>Name</b></th>
+            <th width="10%"><b>Delete?</b></th>   
+          </tr>
+        </thead>
+        <?php foreach ($list_of_course as $info): ?>
+          <tr>
+            <td><?php echo $info['courseId']; ?></td>
+            <td><?php echo $info['name']; ?></td>
+            <td>
+              <form action="main.php" method="post">
+                <input type="submit" value="Delete" name="thisCourseBtn" class="btn btn-danger" />
+                <input type="hidden" name="courseId" value="<?php echo $info['courseId']; ?>"/>
               </form>
             </td>
           </tr>
@@ -87,7 +140,8 @@
             <th width="30%"><b>Name</b></th>        
             <th width="30%"><b>Type</b></th> 
             <th width="30%"><b>Due Date</b></th>
-            <th width="30%"><b>Points</b></th>          
+            <th width="30%"><b>Points</b></th>
+            <th><b>Delete?</b></th>      
           </tr>
         </thead>
         <?php foreach ($list_of_assignment as $info): ?>
@@ -97,26 +151,12 @@
             <td><?php echo $info['type']; ?></td>
             <td><?php echo $info['dueDate']; ?></td>
             <td><?php echo $info['points']; ?></td>
-          </tr>
-        <?php endforeach; ?>
-      </table>
-    </div>
-</div>
-
-<div class="container">
-  <h3>List of Course</h3>
-    <div class="row justify-content-center">  
-      <table class="w3-table w3-bordered w3-card-4 center" style="width:100%">
-        <thead>
-          <tr style="background-color:#B0B0B0">
-            <th width="30%"><b>Course ID</b></th>
-            <th width="30%"><b>Name</b></th>           
-          </tr>
-        </thead>
-        <?php foreach ($list_of_course as $info): ?>
-          <tr>
-            <td><?php echo $info['courseId']; ?></td>
-            <td><?php echo $info['name']; ?></td>
+            <td>
+              <form action="main.php" method="post">
+                <input type="submit" value="Delete" name="thisAssignmentBtn" class="btn btn-danger" />
+                <input type="hidden" name="assignmentId" value="<?php echo $info['assignmentId']; ?>"/>
+              </form>
+            </td>
           </tr>
         <?php endforeach; ?>
       </table>
@@ -130,7 +170,8 @@
           <tr style="background-color:#B0B0B0">
             <th width="30%"><b>Work Id</b></th>
             <th width="30%"><b>Name</b></th>
-            <th width="30%"><b>Notes</b></th>       
+            <th width="30%"><b>Notes</b></th>
+            <th><b>Delete?</b></th>        
           </tr>
         </thead>
         <?php foreach ($list_of_work as $info): ?>
@@ -138,6 +179,12 @@
             <td><?php echo $info['workId']; ?></td>
             <td><?php echo $info['name']; ?></td>
             <td><?php echo $info['notes']; ?></td>
+            <td>
+              <form action="main.php" method="post">
+                <input type="submit" value="Delete" name="thisWorkBtn" class="btn btn-danger" />
+                <input type="hidden" name="workId" value="<?php echo $info['workId']; ?>"/>
+              </form>
+            </td>
           </tr>
         <?php endforeach; ?>
       </table>

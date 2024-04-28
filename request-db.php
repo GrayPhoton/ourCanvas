@@ -10,6 +10,41 @@ function getAllUser(){
     return $result;
 }
 
+function deleteUser(){
+    global $db;
+    $query = "DELETE FROM collaborateOn WHERE userId=:userId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userId',$userId);
+    $statement -> execute();
+
+    $query = "DELETE FROM work WHERE workId=(SELECT workId FROM userWork WHERE userId=:userId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userId',$userId);
+    $statement -> execute();
+
+    $query = "DELETE FROM userWork WHERE userId=:userId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userId',$userId);
+    $statement -> execute();
+
+    $query = "DELETE FROM enrolledIN WHERE userId=:userId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userId',$userId);
+    $statement -> execute();
+
+    $query = "DELETE FROM userAssignment WHERE userId=:userId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userId',$userId);
+    $statement -> execute();
+
+    $query = "DELETE FROM canvasUser WHERE userId=:userId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userId',$userId);
+    $statement -> execute();
+
+    $statement -> closeCursor();
+}
+
 function getAllAssignment(){
     global $db;
     $query = "SELECT * FROM assignment";    
@@ -21,18 +56,31 @@ function getAllAssignment(){
     return $result;
 }
 
-function getUserAssignment($user_id){
+function deleteAssignment($assignmentId){
     global $db;
-    $query = 
-    "SELECT * 
-    FROM assignment 
-    WHERE assignmentId = (SELECT assignmentId FROM userAssignment WHERE userId=$user_id";    
-    $statement = $db -> prepare($query);    // compile
+    $query = "DELETE FROM assigns WHERE assignmentId=:assignmentId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> execute();
-    $result = $statement -> fetchAll();     // fetch()
+
+    $query = "DELETE FROM assignmentWork WHERE assignmentId=:assignmentId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':assignmentId',$assignmentId);
+    $statement -> execute();
+    
+    $query = "DELETE FROM userAssignment WHERE assignmentId=:assignmentId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':assignmentId',$assignmentId);
+    $statement -> execute();
     $statement -> closeCursor();
- 
-    return $result;
+
+
+    $query = "DELETE FROM assignment WHERE assignmentId=:assignmentId";
+    $statement = $db -> prepare($query);    // compile
+    $statement -> bindValue(':assignmentId',$assignmentId);
+    $statement -> execute();
+
+    $statement -> closeCursor();
 }
 
 function getAllCourse(){
@@ -46,6 +94,27 @@ function getAllCourse(){
     return $result;
 }
 
+function deleteCourse($courseId){
+    global $db;
+    $query = "DELETE FROM enrolledIn WHERE courseId=:courseId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':courseId',$courseId);
+    $statement -> execute();
+
+    $query = "DELETE FROM assigns WHERE courseId=:courseId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':courseId',$courseId);
+    $statement -> execute();
+
+    $query = "DELETE FROM course WHERE courseId=:courseId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':courseId',$courseId);
+    $statement -> execute();
+
+    $statement -> closeCursor();
+}
+
+
 function getAllWork(){
     global $db;
     $query = "SELECT * FROM work";    
@@ -57,4 +126,29 @@ function getAllWork(){
     return $result;
 }
 
+function deleteWork($workId){
+    global $db;
+    $query = "DELETE FROM assignmentWork WHERE workId=:workId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId',$workId);
+    $statement -> execute();
+
+    $query = "DELETE FROM userWork WHERE workId=:workId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId',$workId);
+    $statement -> execute();
+
+    $query = "DELETE FROM collaborateOn WHERE workId=:workId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId',$workId);
+    $statement -> execute();
+
+
+    $query = "DELETE FROM work WHERE workId=:workId";
+    $statement = $db -> prepare($query);    // compile
+    $statement -> bindValue(':workId',$workId);
+    $statement -> execute();
+
+    $statement -> closeCursor();
+}
 ?>
