@@ -1,13 +1,10 @@
 <?php
-  require ("connect-db.php");    // include("connect-db.php");
-  require ("request-db.php");
+session_start();
+require ("connect-db.php");    // include("connect-db.php");
+require ("request-db.php");
 ?>
 
 <?php
-  if (!isset($_SESSION['username'])) {
-    // header("Location: login.php");
-    $_SESSION['username'] = 'wbu7dr@virginia.edu';
-  }
 
   // get assignment id in url
   $courseId = $_GET['course'];
@@ -20,6 +17,7 @@
 ?>
 
 <?php
+  $redirect = '';
   if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!empty($_POST['assignmentName'])) {
       $assignmentName = $_POST['assignmentName'];
@@ -29,7 +27,7 @@
       $assignmentPoints = $_POST['assignmentPoints'];
 
       $assignmentId = addAssignmentToUserAndCourse($assignmentName, $assignmentType, $assignmentDescription, $assignmentDueDate, $assignmentPoints, $courseId, $_SESSION['username']);
-      header("Location: assignment.php?assignment=$assignmentId");
+      $redirect = "assignment.php?assignment=$assignmentId";
     }
   }
 ?>
@@ -45,6 +43,13 @@
 </head>
 
 <body>
+  <script>
+    const redirect = <?= json_encode($redirect) ?>;
+    if (redirect) {
+      window.location.href = redirect;
+    }
+  </script>
+
   <div class="container mt-5">
     <div class="row">
       <div class="col-11">
@@ -95,7 +100,7 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form action='home.php' method='post'>
+            <form action='course.php?course=<?=$course['courseId']?>' method='post'>
               <div class="mb-3">
                 <label for="assignmentCourse" class="form-label">Course</label>
                 <input type="text" class="form-control" id="assignmentCourse" name="assignmentCourse" value="<?= $course["name"] ?>" disabled>

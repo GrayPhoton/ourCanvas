@@ -1,7 +1,7 @@
 <?php
 function getAllUser($search = ''){
     global $db;
-    $query = "SELECT * FROM canvasUser";
+    $query = "SELECT * FROM canvasuser";
     if (!empty($search)) {
         $query .= " WHERE name LIKE '%$search%' OR login_email LIKE '%$search%' OR login_password LIKE '%$search%'";
     }
@@ -13,34 +13,65 @@ function getAllUser($search = ''){
     return $result;
 }
 
+function getUser($userName){
+    global $db;
+    $query = "SELECT * FROM canvasuser WHERE login_email=:userName";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userName',$userName);
+    $statement -> execute();
+    $result = $statement -> fetch();
+
+    return $result;
+}
+
+function addUser($name, $email, $password){
+    if (getUser($email)) {
+        return ["error" => "Email already exists"];
+    }
+
+    global $db;
+    $query = "INSERT INTO canvasuser (name, login_email, login_password) VALUES (:name, :email, :password)";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':name', $name);
+    $statement -> bindValue(':email', $email);
+
+    // $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+    $statement -> bindValue(':password', $password);
+    $statement -> execute();
+    $statement -> closeCursor();
+
+    // return user
+    return getUser($email);
+}
+
 function deleteUser(){
     global $db;
-    $query = "DELETE FROM collaborateOn WHERE userId=:userId";
+    $query = "DELETE FROM collaborateon WHERE userId=:userId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userId',$userId);
     $statement -> execute();
 
-    $query = "DELETE FROM work WHERE workId=(SELECT workId FROM userWork WHERE userId=:userId";
+    $query = "DELETE FROM work WHERE workId=(SELECT workId FROM userwork WHERE userId=:userId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userId',$userId);
     $statement -> execute();
 
-    $query = "DELETE FROM userWork WHERE userId=:userId";
+    $query = "DELETE FROM userwork WHERE userId=:userId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userId',$userId);
     $statement -> execute();
 
-    $query = "DELETE FROM enrolledIN WHERE userId=:userId";
+    $query = "DELETE FROM enrolledin WHERE userId=:userId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userId',$userId);
     $statement -> execute();
 
-    $query = "DELETE FROM userAssignment WHERE userId=:userId";
+    $query = "DELETE FROM userassignment WHERE userId=:userId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userId',$userId);
     $statement -> execute();
 
-    $query = "DELETE FROM canvasUser WHERE userId=:userId";
+    $query = "DELETE FROM canvasuser WHERE userId=:userId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userId',$userId);
     $statement -> execute();
@@ -65,7 +96,7 @@ function getAllAssignment($search = ''){
 function getAssignment($assignmentId, $userName){
     // make sure assignment is assigned to user
     global $db;
-    $query = "SELECT * FROM assignment WHERE assignmentId=:assignmentId AND assignmentId IN (SELECT assignmentId FROM userAssignment WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM assignment WHERE assignmentId=:assignmentId AND assignmentId IN (SELECT assignmentId FROM userassignment WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> bindValue(':userName',$userName);
@@ -76,9 +107,9 @@ function getAssignment($assignmentId, $userName){
     return $result;
 }
 
-function getAssignmentWork($assignmentId, $userName){
+function getAssignmentwork($assignmentId, $userName){
     global $db;
-    $query = "SELECT * FROM work WHERE workId IN (SELECT workId FROM assignmentWork WHERE assignmentId=:assignmentId) AND workId IN (SELECT workId FROM userWork WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM work WHERE workId IN (SELECT workId FROM assignmentwork WHERE assignmentId=:assignmentId) AND workId IN (SELECT workId FROM userwork WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> bindValue(':userName',$userName);
@@ -115,7 +146,7 @@ function addAssignmentToUserAndCourse($assignmentName, $assignmentType, $assignm
     $statement -> execute();
     $statement -> closeCursor();
 
-    $query = "INSERT INTO userAssignment (userId, assignmentId) VALUES ((SELECT userId FROM canvasUser WHERE login_email = :userName), :assignmentId)";
+    $query = "INSERT INTO userassignment (userId, assignmentId) VALUES ((SELECT userId FROM canvasuser WHERE login_email = :userName), :assignmentId)";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userName', $userName);
     $statement -> bindValue(':assignmentId', $assignmentId);
@@ -127,7 +158,7 @@ function addAssignmentToUserAndCourse($assignmentName, $assignmentType, $assignm
 
 function getUserAssignments($userName) {
     global $db;
-    $query = "SELECT * FROM assignment WHERE assignmentId IN (SELECT assignmentId FROM userAssignment WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM assignment WHERE assignmentId IN (SELECT assignmentId FROM userassignment WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userName', $userName);
     $statement -> execute();
@@ -144,12 +175,12 @@ function deleteAssignment($assignmentId){
     $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> execute();
 
-    $query = "DELETE FROM assignmentWork WHERE assignmentId=:assignmentId";
+    $query = "DELETE FROM assignmentwork WHERE assignmentId=:assignmentId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> execute();
     
-    $query = "DELETE FROM userAssignment WHERE assignmentId=:assignmentId";
+    $query = "DELETE FROM userassignment WHERE assignmentId=:assignmentId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> execute();
@@ -176,14 +207,14 @@ function addWorkToAssignment($workName, $workNotes, $workFile, $assignmentId, $u
 
     $workId = $db -> lastInsertId();
 
-    $query = "INSERT INTO assignmentWork (assignmentId, workId) VALUES (:assignmentId, :workId)";
+    $query = "INSERT INTO assignmentwork (assignmentId, workId) VALUES (:assignmentId, :workId)";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':assignmentId', $assignmentId);
     $statement -> bindValue(':workId', $workId);
     $statement -> execute();
     $statement -> closeCursor();
 
-    $query = "INSERT INTO userWork (userId, workId) VALUES ((SELECT userId FROM canvasUser WHERE login_email = :userName), :workId)";
+    $query = "INSERT INTO userwork (userId, workId) VALUES ((SELECT userId FROM canvasuser WHERE login_email = :userName), :workId)";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userName', $userName);
     $statement -> bindValue(':workId', $workId);
@@ -209,7 +240,7 @@ function getAllCourse($search = ''){
 
 function getUserCourses($userName) {
     global $db;
-    $query = "SELECT * FROM course WHERE courseId IN (SELECT courseId FROM enrolledIn WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM course WHERE courseId IN (SELECT courseId FROM enrolledin WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userName', $userName);
     $statement -> execute();
@@ -221,7 +252,7 @@ function getUserCourses($userName) {
 
 function getUserCourse($courseId, $userName){
     global $db;
-    $query = "SELECT * FROM course WHERE courseId=:courseId AND courseId IN (SELECT courseId FROM enrolledIn WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM course WHERE courseId=:courseId AND courseId IN (SELECT courseId FROM enrolledin WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':courseId',$courseId);
     $statement -> bindValue(':userName',$userName);
@@ -248,7 +279,7 @@ function addCourseToUser($courseName, $courseCode, $userName){
     global $db;
     $courseId = addCourse($courseName, $courseCode);
 
-    $query = "INSERT INTO enrolledIn (userId, courseId) VALUES ((SELECT userId FROM canvasUser WHERE login_email = :userName), :courseId)";
+    $query = "INSERT INTO enrolledin (userId, courseId) VALUES ((SELECT userId FROM canvasuser WHERE login_email = :userName), :courseId)";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':userName', $userName);
     $statement -> bindValue(':courseId', $courseId);
@@ -258,7 +289,7 @@ function addCourseToUser($courseName, $courseCode, $userName){
 
 function deleteCourse($courseId){
     global $db;
-    $query = "DELETE FROM enrolledIn WHERE courseId=:courseId";
+    $query = "DELETE FROM enrolledin WHERE courseId=:courseId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':courseId',$courseId);
     $statement -> execute();
@@ -278,7 +309,7 @@ function deleteCourse($courseId){
 
 function getCourseAssignments($courseId, $userName) {
     global $db;
-    $query = "SELECT * FROM assignment WHERE assignmentId IN (SELECT assignmentId FROM assigns WHERE courseId=:courseId) AND assignmentId IN (SELECT assignmentId FROM userAssignment WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM assignment WHERE assignmentId IN (SELECT assignmentId FROM assigns WHERE courseId=:courseId) AND assignmentId IN (SELECT assignmentId FROM userassignment WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':courseId', $courseId);
     $statement -> bindValue(':userName', $userName);
@@ -303,19 +334,137 @@ function getAllWork($search = ''){
     return $result;
 }
 
-function deleteWork($workId){
+function deleteWorkFromUser($workId, $userName) {
     global $db;
-    $query = "DELETE FROM assignmentWork WHERE workId=:workId";
+    $query = "DELETE FROM assignmentwork WHERE workId=:workId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> execute();
+
+    $query = "DELETE FROM userwork WHERE workId=:workId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> execute();
+
+    $query = "DELETE FROM collaborateon WHERE workId=:workId";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> execute();
+
+    $query = "DELETE FROM work WHERE workId=:workId AND workId IN (SELECT workId FROM userwork WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> bindValue(':userName', $userName);
+    $statement -> execute();
+    $statement -> closeCursor();
+}
+
+function updateWork($workId, $workName, $workNotes, $workFile, $userName) {
+    global $db;
+    $query = "UPDATE work SET name=:workName, notes=:workNotes, file=:workFile WHERE workId=:workId AND workId IN (SELECT workId FROM userwork WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> bindValue(':workName', $workName);
+    $statement -> bindValue(':workNotes', $workNotes);
+    $statement -> bindValue(':workFile', $workFile);
+    $statement -> bindValue(':userName', $userName);
+    $statement -> execute();
+    $statement -> closeCursor();
+}
+
+function addCollaboratorToWork($workId, $collaboratorUsername, $permission, $userName) {
+    // check if user owns work
+    global $db;
+    $query = "SELECT * FROM work WHERE workId=:workId AND workId IN (SELECT workId FROM userwork WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> bindValue(':userName', $userName);
+    $statement -> execute();
+    $result = $statement -> fetch();
+    $statement -> closeCursor();
+
+    if (!$result) {
+        return ["error" => "You do not own this work"];
+    }
+
+    // check if collaborator exists
+    $collaborator = getUser($collaboratorUsername);
+    if (!$collaborator) {
+        return ["error" => "Collaborator does not exist"];
+    }
+
+    // add course and assignment to collaborator
+    $query = "INSERT INTO collaborateon (userId, workId, permissions) VALUES ((SELECT userId FROM canvasuser WHERE login_email = :collaboratorUsername), :workId, :permission)";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':collaboratorUsername', $collaboratorUsername);
+    $statement -> bindValue(':workId', $workId);
+    $statement -> bindValue(':permission', $permission);
+    $statement -> execute();
+    $statement -> closeCursor();
+
+    return ["success" => "Collaborator added"];
+}
+
+function getInviters($userName) {
+    // get all unique owners of works that user is a collaborator on
+    global $db;
+    $query = "SELECT DISTINCT login_email FROM canvasuser WHERE userId IN (SELECT userId FROM userwork WHERE workId IN (SELECT workId FROM collaborateon WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName)))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userName', $userName);
+    $statement -> execute();
+    $result = $statement -> fetchAll();
+    $statement -> closeCursor();
+
+    return $result;
+}
+
+function getWorksByInviter($inviterName, $userName) {
+    global $db;
+    $query = "SELECT * FROM work WHERE workId IN (SELECT workId FROM collaborateon WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName)) AND workId IN (SELECT workId FROM userwork WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :inviterName))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userName', $userName);
+    $statement -> bindValue(':inviterName', $inviterName);
+    $statement -> execute();
+    $result = $statement -> fetchAll();
+    $statement -> closeCursor();
+
+    return $result;
+}
+
+function deleteWork($workId, $userName){
+    global $db;
+
+    // if user is not owner, check if collaborator with permission to delete
+    $query = "SELECT * FROM work WHERE workId=:workId AND workId IN (SELECT workId FROM userwork WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':workId',$workId);
+    $statement -> bindValue(':userName',$userName);
+    $statement -> execute();
+
+    if (!$statement -> fetch()) {
+        $query = "SELECT * FROM collaborateon WHERE workId=:workId AND userId = (SELECT userId FROM canvasuser WHERE login_email = :userName)";
+        $statement = $db -> prepare($query);
+        $statement -> bindValue(':workId',$workId);
+        $statement -> bindValue(':userName',$userName);
+        $statement -> execute();
+        $result = $statement -> fetch();
+
+        if (!$result || !$result['permissions']) {
+            return ["error" => "You do not have permission to delete this work"];
+        }
+    }
+
+    $query = "DELETE FROM assignmentwork WHERE workId=:workId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':workId',$workId);
     $statement -> execute();
 
-    $query = "DELETE FROM userWork WHERE workId=:workId";
+    $query = "DELETE FROM userwork WHERE workId=:workId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':workId',$workId);
     $statement -> execute();
 
-    $query = "DELETE FROM collaborateOn WHERE workId=:workId";
+    $query = "DELETE FROM collaborateon WHERE workId=:workId";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':workId',$workId);
     $statement -> execute();
@@ -327,16 +476,30 @@ function deleteWork($workId){
     $statement -> execute();
 
     $statement -> closeCursor();
+
+    return ["success" => "Work deleted"];
 }
 
 function getCourseFromAssignment($assignmentId, $userName){
     global $db;
-    $query = "SELECT * FROM course WHERE courseId IN (SELECT courseId FROM assigns WHERE assignmentId=:assignmentId) AND courseId IN (SELECT courseId FROM enrolledIn WHERE userId = (SELECT userId FROM canvasUser WHERE login_email = :userName))";
+    $query = "SELECT * FROM course WHERE courseId IN (SELECT courseId FROM assigns WHERE assignmentId=:assignmentId) AND courseId IN (SELECT courseId FROM enrolledin WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
     $statement = $db -> prepare($query);
     $statement -> bindValue(':assignmentId',$assignmentId);
     $statement -> bindValue(':userName',$userName);
     $statement -> execute();
     $result = $statement -> fetch();
+    $statement -> closeCursor();
+
+    return $result;
+}
+
+function getUserCollaborations($userName) {
+    global $db;
+    $query = "SELECT * FROM work WHERE workId IN (SELECT workId FROM collaborateon WHERE userId = (SELECT userId FROM canvasuser WHERE login_email = :userName))";
+    $statement = $db -> prepare($query);
+    $statement -> bindValue(':userName', $userName);
+    $statement -> execute();
+    $result = $statement -> fetchAll();
     $statement -> closeCursor();
 
     return $result;

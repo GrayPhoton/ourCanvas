@@ -1,0 +1,8 @@
+# Use the PHP 8.1 runtime
+runtime: php81
+
+# Defaults to "serve index.php" 
+
+# If your main page is index.php, comment the above entrypoint setting 
+beta_settings:
+  cloud_sql_instances: "ourcanvas:us-east4:ourcanvasdb"

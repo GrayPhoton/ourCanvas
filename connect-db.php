@@ -31,10 +31,11 @@
 
 /** S24, PHP (on GCP, local XAMPP, or CS server) connect to MySQL (on local XAMPP) **/
 $username = 'root';
-$password = '';
-$host = 'localhost:3306';
+$password = '0A`.JvM/\';Ck$Ve|';
+$host = '34.145.184.162:3306';
 $dbname = 'ourcanvas';    
-$dsn = "mysql:host=$host;dbname=$dbname";  
+$instanceUnixSocket = '/cloudsql/ourcanvas:us-east4:ourcanvasdb';
+$dsn = "mysql:dbname=$dbname;unix_socket=$instanceUnixSocket";  
 ////////////////////////////////////////////
 
 /** S24, PHP (on GCP, local XAMPP, or CS server) connect to MySQL (on CS server) **/
